@@ -1,0 +1,203 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <packaging>pom</packaging>
+
+    <groupId>ru.yuksanbo.common</groupId>
+    <artifactId>common-root</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>Yuksanbo Common Libs</name>
+
+    <scm>
+        <developerConnection>scm:git:git@github.com:yuksanbo/common.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+	    <!-- switch to jitpack.io -->
+	    <!--
+        <repository>
+            <id>maven.yuksanbo.ru</id>
+            <name>Wilemyvu Repo</name>
+            <url>scpexe://maven.yuksanbo.ru/home/maven/repository/</url>
+	</repository>-->
+    </distributionManagement>
+
+    <repositories>
+	    <!-- switch to jitpack.io -->
+	    <!--
+        <repository>
+            <id>maven.yuksanbo.ru</id>
+            <name>Wilemyvu Repo</name>
+            <url>http://maven.wilemyvu.ru</url>
+        </repository>
+-->
+    </repositories>
+
+    <modules>
+        <module>misc</module>
+        <module>logging</module>
+        <module>launcher</module>
+        <module>json</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <kotlin.version>1.1.1</kotlin.version>
+        <typesafe.config.version>1.3.0</typesafe.config.version>
+        <slf4j.version>1.7.7</slf4j.version>
+        <jackson.version>2.7.1-1</jackson.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+        <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
+
+	<!-- not needed?
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh-external</artifactId>
+                <version>2.12</version>
+            </extension>
+        </extensions>
+-->
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>kotlin-maven-plugin</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                    <version>${kotlin.version}</version>
+
+                    <executions>
+                        <execution>
+                            <id>compile</id>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+
+                        <execution>
+                            <id>test-compile</id>
+                            <goals>
+                                <goal>test-compile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.18.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>2.7</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>com.jolira</groupId>
+                    <artifactId>onejar-maven-plugin</artifactId>
+                    <version>1.4.4</version>
+                    <executions>
+                        <execution>
+                            <configuration>
+                                <onejarVersion>0.97</onejarVersion>
+                                <attachToBuild>true</attachToBuild>
+                                <classifier>onejar</classifier>
+                            </configuration>
+                            <goals>
+                                <goal>one-jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.basepom.maven</groupId>
+                    <artifactId>duplicate-finder-maven-plugin</artifactId>
+                    <version>1.2.1</version>
+                    <executions>
+                        <execution>
+                            <id>default</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <printEqualFiles>true</printEqualFiles>
+                        <failBuildInCaseOfDifferentContentConflict>true</failBuildInCaseOfDifferentContentConflict>
+                        <failBuildInCaseOfEqualContentConflict>true</failBuildInCaseOfEqualContentConflict>
+                        <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict>
+                        <checkCompileClasspath>true</checkCompileClasspath>
+                        <checkRuntimeClasspath>true</checkRuntimeClasspath>
+                        <checkTestClasspath>true</checkTestClasspath>
+                        <useResultFile>false</useResultFile>
+                        <ignoredResourcePatterns>
+                            <ignoredResourcePattern>^about\.html$</ignoredResourcePattern>
+                            <ignoredResourcePattern>^.*\.txt$</ignoredResourcePattern>
+                            <ignoredResourcePattern>^.*\.xjb</ignoredResourcePattern>
+                            <ignoredResourcePattern>.*schema\.*$</ignoredResourcePattern>
+                        </ignoredResourcePatterns>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.5.3</version>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <tagNameFormat>release/@{project.version}</tagNameFormat>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+    </build>
+
+</project>
