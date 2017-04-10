@@ -16,6 +16,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <guava.version>18.0</guava.version>
     </properties>
 
     <dependencies>
@@ -23,6 +24,12 @@
             <groupId>ru.yuksanbo.common</groupId>
             <artifactId>logging</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
     </dependencies>
 

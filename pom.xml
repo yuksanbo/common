@@ -36,6 +36,7 @@
         <module>json</module>
         <module>timings</module>
         <module>security</module>
+        <module>jmx</module>
     </modules>
 
     <properties>
