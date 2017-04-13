@@ -10,7 +10,7 @@ internal val timingsMxBeans: MutableMap<MXBeanIdentity, TimingsMXBeanImpl> = mut
 
 internal class TimingsMXBeanImpl : TimingsMXBean {
 
-    private val reservoiresMap = ConcurrentHashMap<String, Reservoir>()
+    private val reservoirsMap = ConcurrentHashMap<String, Reservoir>()
     private val metricsMap = ConcurrentHashMap<String, TimingMetrics>()
 
     override fun getTimingsMetrics(): Map<String, TimingMetrics> {
@@ -18,8 +18,12 @@ internal class TimingsMXBeanImpl : TimingsMXBean {
         return metricsMap
     }
 
+    override fun resetMetrics() {
+        metricsMap.clear()
+    }
+
     fun updateMetric(currentReading: Reading, previousReading: Reading) {
-        val res = reservoiresMap.computeIfAbsent(currentReading.description, { SlidingTimeWindowReservoir(1, TimeUnit.SECONDS) })
+        val res = reservoirsMap.computeIfAbsent(currentReading.description, { SlidingTimeWindowReservoir(1, TimeUnit.SECONDS) })
 
         res.update((currentReading.timeNanos - previousReading.timeNanos) / 1000000)
 
@@ -30,8 +34,11 @@ internal class TimingsMXBeanImpl : TimingsMXBean {
                 TimingMetrics(
                         snapshot.max,
                         snapshot.median,
+                        snapshot.get75thPercentile(),
+                        snapshot.get98thPercentile(),
                         snapshot.get95thPercentile(),
-                        snapshot.get99thPercentile()
+                        snapshot.get99thPercentile(),
+                        snapshot.get999thPercentile()
                 )
         )
     }

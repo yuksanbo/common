@@ -1,6 +1,5 @@
 package ru.yuksanbo.common.timings
 
-import com.google.common.collect.ImmutableMap
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import ru.yuksanbo.common.jmx.MXBeanIdentity
@@ -11,33 +10,62 @@ import java.time.Duration
 import java.util.Deque
 import java.util.concurrent.ConcurrentLinkedDeque
 
-class Timings
-@JvmOverloads
-constructor(
+val defaultLog by lazy { LoggerFactory.getLogger(Timings::class.java) }
+
+class Timings private constructor(
         private val context: String,
         private val thresholdMillis: Long,
-        private val logger: Logger = LoggerFactory.getLogger(Timings::class.java),
-        private val mxBeanIdentity: MXBeanIdentity = MXBeanIdentity(
-                Timings::class.java.`package`.name,
-                "Timings",
-                context.toUpperCamelCase()
-        )
+        private val logger: Logger,
+        metricsEnabled: Boolean,
+        userMxBeanName: String?
 ) {
 
     private val readings: Deque<Reading> = ConcurrentLinkedDeque<Reading>()
-    private val mxBean = timingsMxBeans.computeIfAbsent(
-            mxBeanIdentity,
-            { identity ->
-                val bean = TimingsMXBeanImpl()
-                MXBeans.registerMXBean(bean, mxBeanIdentity)
-                bean
+    private val mxBeanName: String? = userMxBeanName ?:
+            if (metricsEnabled) {
+                context.toUpperCamelCase()
             }
-    )
+            else {
+                null
+            }
+    private val timingsMetricsMXBean: TimingsMXBeanImpl?
 
-    fun takeReading(description: String, collect: Boolean = false) {
+    init {
+        timingsMetricsMXBean = mxBeanName?.let {
+            timingsMxBeans.computeIfAbsent(
+                    MXBeanIdentity("ru.yuksanbo.common.timings", "TimingsMetrics", it),
+                    { identity ->
+                        val timingsMxBean = TimingsMXBeanImpl()
+                        MXBeans.registerMXBean(timingsMxBean, identity)
+                        timingsMxBean
+                    }
+            )
+        }
+    }
+
+    @JvmOverloads
+    constructor(
+            context: String,
+            thresholdMillis: Long,
+            logger: Logger = defaultLog,
+            metricsEnabled: Boolean = false
+    ) : this(context, thresholdMillis, logger, metricsEnabled, null)
+
+    @JvmOverloads
+    constructor(
+            context: String,
+            thresholdMillis: Long,
+            logger: Logger = defaultLog,
+            mxBeanName: String
+    ): this(context, thresholdMillis, logger, true, mxBeanName)
+
+    @JvmOverloads
+    fun takeReadings(description: String, collect: Boolean = false) {
         val reading = Reading(description, System.nanoTime())
         if (collect) {
-            readings.peekLast()?.let { lastReading -> mxBean.updateMetric(reading, lastReading) }
+            timingsMetricsMXBean?.let {
+                mxBean -> readings.peekLast()?.let { lastReading -> mxBean.updateMetric(reading, lastReading) }
+            }
         }
         readings.add(reading)
     }
