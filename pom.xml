@@ -5,12 +5,12 @@
 
     <groupId>ru.yuksanbo.common</groupId>
     <artifactId>common-root</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <name>Yuksanbo Common Libs</name>
 
     <scm>
         <developerConnection>scm:git:git@github.com:yuksanbo/common.git</developerConnection>
-        <tag>release/1.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
